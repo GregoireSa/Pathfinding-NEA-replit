@@ -14,7 +14,7 @@ def text(surface,info,x,y,colour=(0,0,0),size=30):
     surface.blit(text,text_rect)
 
 class button:
-    def __init__(self,surface,text,command,pos,fontsize=30,fg=(0,0,0),bg=(255,255,255)):
+    def __init__(self,surface,text,command,pos,fontsize=30,fg=(0,0,0),bg=(255,255,255),group=None):
         self.surface = surface
         self.command = command
         self.fg, self.bg = fg, bg
@@ -28,6 +28,7 @@ class button:
         self.fgRect = self.info.get_rect(topleft=pos)
         self.bgRect = self.fgRect.inflate(20,20)
         self.fgRect.center = self.bgRect.center
+        if group != None: group.append(self)
         
     def update(self):
         

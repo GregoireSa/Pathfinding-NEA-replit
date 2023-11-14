@@ -15,16 +15,17 @@ win = pygame.display.set_mode((WIDTH,HEIGHT), pygame.RESIZABLE)
 pygame.display.set_caption("dijkstra's algorithm")
 CLOCK, FPS = pygame.time.Clock(), 60
 
-BLANK_COLOUR = (20,20,20) # VERY DARK GRAY
-GRID_COLOUR = (50,50,50) # DARK GRAY
-BARRIER_COLOUR = (100,100,100) # LIGHT GRAY
-BORDER_COLOUR = (65,65,65) # GRAY
-START_COLOUR = (97,135,40) # PURPLE  233,184,36
-FIN_COLOUR = (178,16,49) # ORANGE 250, 160, 90 238,147,34
-PATH_COLOUR = (128,51,135) # DARK RED 170, 40, 40
-VISITED_COLOUR = (5,5,5) # GREEN 0,255,0 33,156,144
-QUEUED_COLOUR = (0,100,100) # RED 255,0,0
+BLANK_COLOUR = (20,20,20)
+GRID_COLOUR = (50,50,50)
+BARRIER_COLOUR = (100,100,100)
+BORDER_COLOUR = (65,65,65)
+START_COLOUR = (97,135,40)
+FIN_COLOUR = (178,16,49)
+PATH_COLOUR = (128,51,135)
+VISITED_COLOUR = (5,5,5)
+QUEUED_COLOUR = (0,100,100)
 UI_MAIN_COLOUR = (30,30,30)
+UI_BG_COLOUR = (50,50,50)
 UI_TEXT_COLOUR = (100,100,100)
 
 OBSTACLE_COLOURS = [BARRIER_COLOUR,BORDER_COLOUR]
@@ -218,20 +219,14 @@ def draw_grid(rows,cols):
     #     pygame.draw.line(win,GRID_COLOUR,(0,j*CELL_GAP),(GRID_WIDTH,j*CELL_GAP))
 
 selected_algo = 'dijstra'
-def selectDijkstra():
+
+def select_algo(algo):
     global selected_algo
-    selected_algo = 'dijkstra'
-def selectAstar():
-    global selected_algo
-    selected_algo = 'astar'
-def selectDynamic():
-    global selected_algo
-    selected_algo = 'dynamic'
-def selectGreedyBFS():
-    global selected_algo
-    selected_algo = 'greedybfs'
+    selected_algo = algo
 
 # UI ELEMENTS:
+
+buttons = []
 
 def randomNodes():
     for row in grid:
@@ -244,6 +239,7 @@ def increaseGridSize():
     CELL_GAP += 5
     init_grid()
     draw_grid(ROWS,COLS)
+    
 def decreaseGridSize():
     global CELL_GAP
     if CELL_GAP > 5:
@@ -253,27 +249,32 @@ def decreaseGridSize():
         init_grid()
         draw_grid(ROWS,COLS)
 
-randomButton = basicUI.button(win,"random",lambda:randomNodes(),(GRID_WIDTH+(WIDTH-GRID_WIDTH)//2-60,100),fg=UI_TEXT_COLOUR,bg=GRID_COLOUR)
+randomButton = basicUI.button(win,"random",lambda:randomNodes(),(GRID_WIDTH+(WIDTH-GRID_WIDTH)//2-60,100),
+                              fg=UI_TEXT_COLOUR,bg=GRID_COLOUR,group=buttons)
 
-largerGrid = basicUI.button(win,"+",lambda:increaseGridSize(),(GRID_WIDTH+(WIDTH-GRID_WIDTH)//2-60,250),fg=UI_TEXT_COLOUR,bg=GRID_COLOUR)
-smallerGrid = basicUI.button(win,"-",lambda:decreaseGridSize(),(GRID_WIDTH+(WIDTH-GRID_WIDTH)//2,250),fg=UI_TEXT_COLOUR,bg=GRID_COLOUR)
+largerGrid = basicUI.button(win,"+",lambda:increaseGridSize(),(GRID_WIDTH+(WIDTH-GRID_WIDTH)//2-60,250),
+                            fg=UI_TEXT_COLOUR,bg=GRID_COLOUR,group=buttons)
+smallerGrid = basicUI.button(win,"-",lambda:decreaseGridSize(),(GRID_WIDTH+(WIDTH-GRID_WIDTH)//2,250),
+                             fg=UI_TEXT_COLOUR,bg=GRID_COLOUR,group=buttons)
 
 def resetGrid():
     for i,row in enumerate(grid):
         for j in range(len(row)):
             if i != 0 and i != ROWS-1 and j != 0 and j != COLS-1:
                 grid[i][j].colour = BLANK_COLOUR
-resetButton = basicUI.button(win,"reset",lambda:resetGrid(),(GRID_WIDTH+(WIDTH-GRID_WIDTH)//2-60,150),fg=UI_TEXT_COLOUR,bg=GRID_COLOUR)
+resetButton = basicUI.button(win,"reset",lambda:resetGrid(),(GRID_WIDTH+(WIDTH-GRID_WIDTH)//2-60,150),
+                             fg=UI_TEXT_COLOUR,bg=GRID_COLOUR,group=buttons)
 started = False
 def startAlgo():
     started = True
-startButton = basicUI.button(win,"start",lambda:startAlgo(),(GRID_WIDTH+(WIDTH-GRID_WIDTH)//2-60,200),fg=UI_TEXT_COLOUR,bg=GRID_COLOUR)
+startButton = basicUI.button(win,"start",lambda:startAlgo(),(GRID_WIDTH+(WIDTH-GRID_WIDTH)//2-60,200),
+                             fg=UI_TEXT_COLOUR,bg=GRID_COLOUR,group=buttons)
 
 algoChoice = basicUI.dropdown(win,"Algorithm",(GRID_WIDTH+(WIDTH-GRID_WIDTH)//2-60,300),fg=UI_TEXT_COLOUR,bg=GRID_COLOUR)
-algoChoice.add_option("dijkstra",lambda:selectDijkstra())
-algoChoice.add_option("A star",lambda:selectAstar())
-algoChoice.add_option("greedy BFS",lambda:selectGreedyBFS())
-algoChoice.add_option("dynamic",lambda:selectDynamic())
+algoChoice.add_option("dijkstra",lambda:select_algo("dijkstra"))
+algoChoice.add_option("A star",lambda:select_algo("astar"))
+algoChoice.add_option("greedy BFS",lambda:select_algo("greedybfs"))
+algoChoice.add_option("dynamic",lambda:select_algo("dynamic"))
 
 def draw_surface():
     win.fill((255,255,255))
@@ -283,16 +284,9 @@ def draw_surface():
     yMargin = 10
     pygame.draw.rect(win,UI_MAIN_COLOUR,(GRID_WIDTH,0,UI_WIDTH,HEIGHT))
     basicUI.text(win,"Pathfinding",GRID_WIDTH+(WIDTH-GRID_WIDTH)//2-75,yMargin,UI_TEXT_COLOUR,45)
-    randomButton.update()
-    resetButton.update()
-    startButton.update()
-    largerGrid.update()
-    smallerGrid.update()
-    randomButton.draw()
-    resetButton.draw()
-    startButton.draw()
-    largerGrid.draw()
-    smallerGrid.draw()
+    for button in buttons:
+        button.update()
+        button.draw()
     algoChoice.update()
 
     pygame.display.update()
@@ -411,6 +405,8 @@ def main():
     pygame.quit()
     quit()
 
+#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
+
 currPage = 0
 def toMenu():
     global currPage
@@ -418,6 +414,20 @@ def toMenu():
 def toPathfinding(): 
     global currPage
     currPage = 1
+    
+    
+def event_handler():
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            quit()
+        if event.type == pygame.VIDEORESIZE:
+            prev_win = win
+            WIDTH,HEIGHT = event.w,event.h
+            GRID_WIDTH,GRID_HEIGHT = event.w*0.75, event.h
+            win = pygame.display.set_mode((WIDTH,HEIGHT),pygame.RESIZABLE)
+            win.blit(prev_win,(0,0))
+            del prev_win
 
 menuPage = menu.Menu(win,WIDTH,HEIGHT,lambda:toPathfinding())
 pathfPage = pathfinding.Pathfinding(win,WIDTH,HEIGHT,lambda:toMenu(),grid)
@@ -425,27 +435,30 @@ pathfPage = pathfinding.Pathfinding(win,WIDTH,HEIGHT,lambda:toMenu(),grid)
 if __name__ == '__main__':
     running = True
     while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-            if event.type == pygame.VIDEORESIZE:
-                old_win = win
-                WIDTH,HEIGHT = event.w, event.h
-                GRID_WIDTH, GRID_HEIGHt = event.w*0.75, event.h
-                win = pygame.display.set_mode((WIDTH,HEIGHT),pygame.RESIZABLE)
-                win.blit(old_win,(0,0))
-                del old_win
+        
+        event_handler()
+        
         if currPage == 0: # main menu page
             menuPage.load()
         elif currPage == 1: # pathfinding page
-            main()
-            if pathfPage.start_search:
-                if selected_algo == 'dijkstra':
-                    pass # RUN DIJKSTRA
-                elif selected_algo == 'astar':
-                    pass # RUN A*
-            else:
+            if not pathfPage.start_search:
                 pathfPage.load()
+            else:
+                if pathfPage.start_cell != None and pathfPage.fin_cell != None:
+                    for i,row in enumerate(pathfPage.grid):
+                        for j in range(len(row)):
+                            c = pathfPage.grid[i][j].colour
+                            if c==VISITED_COLOUR or c==QUEUED_COLOUR or c==PATH_COLOUR:
+                                grid[i][j].colour = BLANK_COLOUR
+                    if pathfPage.selected_algo == 'dijkstra':
+                        dijkstra(pathfPage.start_cell,pathfPage.fin_cell)
+                    elif pathfPage.selected_algo == 'astar':
+                        print("astar")
+                    elif pathfPage.selected_algo == 'greedybfs':
+                        print("greedy BFS")
+                    elif pathfPage.selected_algo == "dynamic":
+                        print("dynamic")
+                    pathfPage.star_search = False
         pygame.display.update()
         
     pygame.quit()
