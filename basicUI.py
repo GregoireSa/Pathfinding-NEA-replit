@@ -25,11 +25,18 @@ class button:
         self.fontsize = fontsize
         self.font = pygame.font.Font(None,self.fontsize)
         self.info = self.font.render(self.text,True,self.fg)
-        self.fgRect = self.info.get_rect(topleft=pos)
+        self.fgRect = self.info.get_rect(topleft=self.pos)
         self.bgRect = self.fgRect.inflate(20,20)
         self.fgRect.center = self.bgRect.center
         if group != None: group.append(self)
-        
+    
+    def change_text(self,newText):
+        self.text = newText
+        self.info = self.font.render(self.text,True,self.fg)
+        self.fgRect = self.info.get_rect(topleft=self.pos)
+        self.bgRect = self.fgRect.inflate(20,20)
+        self.fgRect.center = self.bgRect.center
+    
     def update(self):
         
         mouse_pos = pygame.mouse.get_pos()

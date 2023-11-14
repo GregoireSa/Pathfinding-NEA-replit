@@ -5,7 +5,7 @@ from time import sleep
 import basicUI
 import menu
 import pathfinding
-# testing github between vscode and replit
+
 
 pygame.init()
 WIDTH, HEIGHT = 1000,500
@@ -90,7 +90,7 @@ def dijkstra(start_cell,fin_cell):
         visited.append(curr_cell)
         curr_cell.colour = VISITED_COLOUR
         Q.pop(0)
-        draw_surface()
+        pathfPage.load()
         start_cell.colour = START_COLOUR
         
     for row in grid:
@@ -115,10 +115,69 @@ def dijkstra(start_cell,fin_cell):
             if curr_cell == start_cell: break
             curr_cell.colour = PATH_COLOUR
             curr_cell = curr_cell.pathfind_prior
-            draw_surface()
+            pathfPage.load()
             sleep(.01)
 
-
+def greedybfs(start_cell,fin_cell):
+    visited = []
+    open = []
+    curr_cell = start_cell
+    open.append(start_cell)
+    found = False
+    
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+        if curr_cell == fin_cell:
+            found = True
+            break
+        best_cost = float('inf')
+        best_cell = None
+        for neighbour in curr_cell.neighbours:
+            if neighbour not in open and (neighbour.colour == BLANK_COLOUR or neighbour.colour == FIN_COLOUR):
+                neighbour.colour = QUEUED_COLOUR
+                neighbour.pathfind_prior = curr_cell
+                cost = abs(neighbour.col-fin_cell.col)+abs(neighbour.row-fin_cell.row)
+                if cost < best_cost:
+                    best_cost = cost
+                    best_cell = neighbour
+        
+        open.append(best_cell)
+        visited.append(curr_cell)
+        curr_cell.colour = VISITED_COLOUR
+        open.pop(0)
+        curr_cell = open[0]
+            
+        for cell in open:
+            if cell.colour != START_COLOUR: cell.colour = VISITED_COLOUR
+        
+        if curr_cell.colour != START_COLOUR: curr_cell.colour = VISITED_COLOUR
+        
+        start_cell.colour = START_COLOUR
+        draw_surface()
+        
+    for row in grid:
+        for n in row:
+            if n.colour == VISITED_COLOUR or n.colour == QUEUED_COLOUR:
+                n.colour = BLANK_COLOUR
+    
+    if found:
+        fin_cell.colour = FIN_COLOUR
+        curr_cell = fin_cell.pathfind_prior
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    quit()
+            if curr_cell == start_cell: break
+            curr_cell.colour = PATH_COLOUR
+            curr_cell = curr_cell.pathfind_prior
+            draw_surface()
+            sleep(.1)
+            
+        
 def bubblesort(arr): # bubble sort
     for i in range(1,len(arr)):
         for j in range (len(arr)-1):
@@ -455,10 +514,10 @@ if __name__ == '__main__':
                     elif pathfPage.selected_algo == 'astar':
                         print("astar")
                     elif pathfPage.selected_algo == 'greedybfs':
-                        print("greedy BFS")
+                        greedybfs(pathfPage.start_cell,pathfPage.fin_cell)
                     elif pathfPage.selected_algo == "dynamic":
                         print("dynamic")
-                    pathfPage.star_search = False
+                    pathfPage.start_search = False
         pygame.display.update()
         
     pygame.quit()

@@ -29,7 +29,7 @@ class Pathfinding:
         self.cellsize = 25
         self.rows = int(self.grid_height//self.cellsize)
         self.cols = int(self.grid_width//self.cellsize)
-        self.draw_lines = True
+        self.show_lines = False
         self.buttons = []
         
         self.start_search = False
@@ -41,20 +41,23 @@ class Pathfinding:
         self.randomButton = basicUI.button(self.win,"random",lambda:self.randomFunc(),
                                            (self.grid_width+(self.width-self.grid_width)//2-60,100),
                                            fg=UI_TEXT_COLOUR,bg=UI_BG_COLOUR,group=self.buttons)
-        self.largerGridButton = basicUI.button(self.win,"+",lambda:self.largerGridFunc(),
-                                               (self.grid_width+(self.width-self.grid_width)//2-60,250),
-                                               fg=UI_TEXT_COLOUR,bg=UI_BG_COLOUR,group=self.buttons)
-        self.smallerGridButton = basicUI.button(self.win,"-",lambda:self.smallerGridFunc(),
-                                                (self.grid_width+(self.width-self.grid_width)//2,250),
-                                                fg=UI_TEXT_COLOUR,bg=UI_BG_COLOUR,group=self.buttons)
         self.resetButton = basicUI.button(self.win,"reset",lambda:self.resetFunc(),
                                           (self.grid_width+(self.width-self.grid_width)//2-60,150),
                                           fg=UI_TEXT_COLOUR,bg=UI_BG_COLOUR,group=self.buttons)
         self.startButton = basicUI.button(self.win,"start",lambda:self.startFunc(),
                                           (self.grid_width+(self.width-self.grid_width)//2-60,200),
                                           fg=UI_TEXT_COLOUR,bg=UI_BG_COLOUR,group=self.buttons)
+        self.largerGridButton = basicUI.button(self.win,"+",lambda:self.largerGridFunc(),
+                                               (self.grid_width+(self.width-self.grid_width)//2-60,250),
+                                               fg=UI_TEXT_COLOUR,bg=UI_BG_COLOUR,group=self.buttons)
+        self.smallerGridButton = basicUI.button(self.win,"-",lambda:self.smallerGridFunc(),
+                                                (self.grid_width+(self.width-self.grid_width)//2,250),
+                                                fg=UI_TEXT_COLOUR,bg=UI_BG_COLOUR,group=self.buttons)
+        self.gridLinesButton = basicUI.button(self.win,"show lines", lambda:self.showLinesFunc(),
+                                              (self.grid_width+(self.width-self.grid_width)//2-60,300),
+                                              fg=UI_TEXT_COLOUR,bg=UI_BG_COLOUR,group=self.buttons)
         self.algoSelector = basicUI.dropdown(self.win,"algorithm",
-                                             (self.grid_width+(self.width-self.grid_width)//2-60,300),
+                                             (self.grid_width+(self.width-self.grid_width)//2-60,350),
                                              fg=UI_TEXT_COLOUR,bg=UI_BG_COLOUR)
         self.algoSelector.add_option("dijkstra",lambda:self.select_algo("dijkstra"))
         self.algoSelector.add_option("A star",lambda:self.select_algo("astar"))
@@ -67,14 +70,6 @@ class Pathfinding:
                 for cell in row:
                     if (cell.colour == BLANK_COLOUR or cell.colour == PATH_COLOUR) and random.randint(1,15) == 1:
                         cell.colour = BARRIER_COLOUR
-    def largerGridFunc(self):
-        if not self.start_search:
-            self.cellsize += 5
-            self.resetFunc()
-    def smallerGridFunc(self):
-        if not self.start_search:
-            self.cellsize -= 5
-            self.resetFunc()
     def resetFunc(self):
         for i,row in enumerate(self.grid):
             for j in range(len(row)):
@@ -83,7 +78,18 @@ class Pathfinding:
         if self.start_search: self.start_search = False
     def startFunc(self):
         self.start_search = True
-        
+    def largerGridFunc(self):
+        if not self.start_search:
+            self.cellsize += 5
+            self.resetFunc()
+            self.load()
+    def smallerGridFunc(self):
+        if not self.start_search:
+            self.cellsize -= 5
+            self.resetFunc()
+            self.load()
+    def showLinesFunc(self):
+        self.show_lines = not self.show_lines
     def select_algo(self,algorithm):
         self.selected_algo = algorithm
     
@@ -125,12 +131,18 @@ class Pathfinding:
             if pygame.mouse.get_pressed()[2] and self.in_bounds(x_coord,y_coord):
                 self.grid[x_coord][y_coord].colour = BLANK_COLOUR
             
+            # UPDATING GRID LINES BUTTON
+            if self.show_lines:
+                self.gridLinesButton.change_text("hide lines")
+            else:
+                self.gridLinesButton.change_text("show lines")
+            
             # DRAW WINDOW
             self.win.fill((255,255,255))
             for row in self.grid:
                 for cell in row: cell.draw(self.win)
             
-            if self.draw_lines:
+            if self.show_lines:
                 for i in range(self.cols):
                     pygame.draw.line(self.win,GRID_COLOUR,(i*self.cellsize,0),(i*self.cellsize,self.grid_height))
                 for j in range(self.rows):
